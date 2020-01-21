@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+require 'erb'
+
+STORIES = Dir.glob('stories/*.txt').reduce({}) do |acc, story_file|
+  story_title = story_file.split('/').last
+  acc.merge(story_title => File.read(story_file))
+end
+
+INDEX_TEMPLATE = ERB.new(File.read('templates/index.html.erb'))
+STORY_TEMPLATE = ERB.new(File.read('templates/story.html.erb'))
+
+build_index = proc do
+  story_links = STORIES.keys.map do |story_name|
+    "<a href=\"/huistory/stories/#{story_name}\">#{story_name}</a>"
+  end
+
+  INDEX_TEMPLATE.result(binding)
+end
+
+build_stories = proc do
+  STORIES.map do |(story_title, story_text)|
+    story_paragraphs = story_text.split("\n\n").map { |p| "<p>#{p.gsub("\n", "<br />")}</p>" }
+
+    { filename: story_title, html: STORY_TEMPLATE.result(binding) }
+  end
+end
+
+index_html = build_index.call
+File.write('docs/index.html', index_html)
+
+stories = build_stories.call
+stories.each do |story_data|
+  File.write("docs/stories/#{story_data[:filename].sub(/txt$/, 'html')}", story_data[:html])
+end
