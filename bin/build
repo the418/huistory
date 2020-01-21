@@ -12,7 +12,7 @@ STORY_TEMPLATE = ERB.new(File.read('templates/story.html.erb'))
 
 build_index = proc do
   story_links = STORIES.keys.map do |story_name|
-    "<a href=\"/huistory/stories/#{story_name}\">#{story_name}</a>"
+    "<a href=\"/huistory/stories/#{story_name}\">#{story_name.sub(/\.txt$/, '')}</a>"
   end
 
   INDEX_TEMPLATE.result(binding)
