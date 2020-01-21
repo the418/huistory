@@ -31,11 +31,19 @@
     mark {
       background-color: rgb(222, 243, 255);
     }
+    .read-time {
+      font-size: 16px;
+      font-weight: 300;
+      color: rgba(0, 0, 0, .54);
+      line-height: 20px;
+      font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Arial, sans-serif;
+    }
   </style>
 </head>
 <body>
   <article>
     <h1><%= story_title %></h1>
+    <div class="read-time"><%= read_time %> min read</div>
     <%= story_paragraphs.join("\n") %>
   </article>
 </body>

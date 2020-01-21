@@ -2,27 +2,34 @@
 
 require 'erb'
 
+AVG_WPM = 265
+
 STORIES = Dir.glob('stories/*.txt').reduce({}) do |acc, story_file|
   story_title = story_file.split('/').last
-  acc.merge(story_title => File.read(story_file))
+  text = File.read(story_file)
+  acc.merge(story_title => { text: text, read_time: text.split(/\s/).length.fdiv(AVG_WPM).ceil })
 end
 
 INDEX_TEMPLATE = ERB.new(File.read('templates/index.html.erb'))
 STORY_TEMPLATE = ERB.new(File.read('templates/story.html.erb'))
 
 build_index = proc do
-  story_links = STORIES.keys.map do |story_name|
-    "<a href=\"/huistory/stories/#{story_name.sub(/\.txt$/, '')}\">#{story_name}</a>"
+  story_links = STORIES.map do |(story_name, story_data)|
+    read_time = story_data.fetch(:read_time)
+    "<a href=\"/huistory/stories/#{story_name.sub(/\.txt$/, '')}\">#{story_name}</a> (#{read_time} min read)"
   end
 
   INDEX_TEMPLATE.result(binding)
 end
 
 build_stories = proc do
-  STORIES.map do |(story_title, story_text)|
+  STORIES.map do |(story_title, story_data)|
+    story_text = story_data.fetch(:text)
+    read_time = story_data.fetch(:read_time)
+
     story_paragraphs = story_text.split("\n\n").map { |p| "<p>#{p.gsub("\n", "<br />")}</p>" }
 
-    { filename: story_title, html: STORY_TEMPLATE.result(binding) }
+    { filename: story_title, html: STORY_TEMPLATE.result(binding), read_time: read_time }
   end
 end
 
