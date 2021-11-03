@@ -27,7 +27,7 @@ build_stories = proc do
     story_text = story_data.fetch(:text)
     read_time = story_data.fetch(:read_time)
 
-    story_paragraphs = story_text.split("\n\n").map { |p| "<p>#{p.gsub("\n", "<br />")}</p>" }
+    story_paragraphs = story_text.split("\n\n").map { |p| "<p><span>#{p.gsub("\n", "<br />")}</span></p>" }
 
     { filename: story_title, html: STORY_TEMPLATE.result(binding), read_time: read_time }
   end

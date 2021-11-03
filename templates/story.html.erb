@@ -45,6 +45,9 @@
       top: 50%;
       transform: translateY(-50%);
     }
+    p.is-being-spoken span {
+      background-color: darkseagreen;
+    }
   </style>
 </head>
 <body>
@@ -76,11 +79,29 @@
       $speechButton.type = 'button';
       $speechButton.classList.add('speech-button')
 
-      var utterance = new SpeechSynthesisUtterance('<%= story_text.gsub(/["']/, '').split("\n").join(' ') %>');
-      utterance.voice = voice;
-      utterance.pitch = 1;
-      utterance.rate = 1;
-      utterance.volume = 0.3;
+      var paragraphs = Array.from(document.getElementsByTagName('p'));
+      var currentParagraphIndex = -1;
+
+      function start () {
+        paragraphs.forEach(function (paragraph) {
+          var utterance = new SpeechSynthesisUtterance(paragraph.innerText.replace(/[\n\"\']/g, ' '));
+          utterance.voice = voice;
+          utterance.pitch = 1;
+          utterance.rate = 1;
+          utterance.volume = 0.3;
+
+          utterance.onstart = function () {
+            paragraph.classList.add('is-being-spoken');
+          }
+          utterance.onend = function () {
+            paragraph.classList.remove('is-being-spoken');
+          }
+          utterance.onerror = console.error;
+
+          synth.speak(utterance);
+        });
+      }
+
       $speechButton.addEventListener('click', function (e) {
         if (synth.paused) {
           synth.resume();
@@ -90,7 +111,7 @@
           $speechButton.innerText = 'голос';
         } else {
           synth.cancel();
-          synth.speak(utterance);
+          start();
           $speechButton.innerText = 'пауза';
         }
       });
@@ -99,7 +120,8 @@
     }
 
     if (synth) {
-      synth.addEventListener('voiceschanged', onVoicesLoaded);
+      synth.onvoiceschanged = onVoicesLoaded;
+      onVoicesLoaded();
     }
   </script>
 </body>
