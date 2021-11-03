@@ -60,6 +60,12 @@
       var voice = synth.getVoices().find(function (voice) {
         return voice.name === 'Katya'
       });
+      if (!voice) {
+        // fallback voice for RU
+        voice = synth.getVoices().find(function (voice) {
+          return voice.lang === 'ru-RU'
+        });
+      }
       if (!voice) return;
 
       var $title = document.getElementsByClassName('js-story-title')[0];
