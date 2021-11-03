@@ -21,6 +21,7 @@
       font-size: 40px;
       color: rgba(0, 0, 0, 0.84);
       font-weight: 400;
+      position: relative;
     }
     p {
       margin-top: 1em;
@@ -38,13 +39,62 @@
       line-height: 20px;
       font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Arial, sans-serif;
     }
+    .speech-button {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
   </style>
 </head>
 <body>
   <article>
-    <h1><%= story_title %></h1>
+    <h1 class="js-story-title"><%= story_title %></h1>
     <div class="read-time"><%= read_time %> min read</div>
     <%= story_paragraphs.join("\n") %>
   </article>
+  <script type="text/javascript">
+    var synth = window.speechSynthesis;
+
+    function onVoicesLoaded () {
+      var voice = synth.getVoices().find(function (voice) {
+        return voice.name === 'Katya'
+      });
+      if (!voice) return;
+
+      var $title = document.getElementsByClassName('js-story-title')[0];
+      if (!$title) return;
+
+      var $speechButton = document.createElement('button');
+      $speechButton.innerText = 'голос';
+      $speechButton.type = 'button';
+      $speechButton.classList.add('speech-button')
+
+      var utterance = new SpeechSynthesisUtterance('<%= story_text.gsub(/["']/, '').split("\n").join(' ') %>');
+      utterance.voice = voice;
+      utterance.pitch = 1;
+      utterance.rate = 1;
+      utterance.volume = 0.3;
+      $speechButton.addEventListener('click', function (e) {
+        if (synth.paused) {
+          synth.resume();
+          $speechButton.innerText = 'пауза';
+        } else if (synth.speaking) {
+          synth.pause();
+          $speechButton.innerText = 'голос';
+        } else {
+          synth.cancel();
+          synth.speak(utterance);
+          $speechButton.innerText = 'пауза';
+        }
+      });
+
+      $title.appendChild($speechButton);
+    }
+
+    if (synth) {
+      synth.addEventListener('voiceschanged', onVoicesLoaded);
+    }
+  </script>
 </body>
 </html>
